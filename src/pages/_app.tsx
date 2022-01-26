@@ -1,6 +1,14 @@
-import { AppProps} from 'next/app'
+import { AppProps } from "next/app";
+
+/*
+  É O COMPONENTE MAIS EXTERNO DA APLICAÇÃO.
+  TODA VEZ QUE O USUÁRIO TROCAR DE PÁGINA, 
+  ELE VAI SER RECARREGADO.
+  NÃO É ROTEADO PELO NEXT
+*/
+
 function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+  return <Component {...pageProps} />;
 }
 
-export default MyApp
+export default MyApp;
