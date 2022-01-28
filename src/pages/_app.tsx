@@ -1,5 +1,6 @@
 import { AppProps } from "next/app";
 import "../../styles/global.scss";
+import { Header } from "../components/Header";
 
 /*
   É O COMPONENTE MAIS EXTERNO DA APLICAÇÃO.
@@ -9,7 +10,12 @@ import "../../styles/global.scss";
 */
 
 function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+  return (
+    <>
+      <Header />
+      <Component {...pageProps} />
+    </>
+  );
 }
 
 export default MyApp;
