@@ -1,4 +1,4 @@
-import { GetServerSideProps } from "next";
+import { GetServerSideProps, GetStaticProps } from "next";
 import Head from "next/head";
 
 import { SubscribeButton } from "../components/SubscribeButton";
@@ -58,7 +58,30 @@ export default function Home({ product }: HomeProps) {
   SÓ FUNCIONA EM PÁGINA.
 */
 
-export const getServerSideProps: GetServerSideProps = async () => {
+// export const getServerSideProps: GetServerSideProps = async () => {
+//   const price = await stripe.prices.retrieve("price_1KNhaXJFfeRRNYB1Ab6S7umT", {
+//     expand: ["product"],
+//   });
+
+//   const product = {
+//     priceId: price.id,
+//     // Sempre que trabalhar com preço no BD é interessante salvar em centávos
+//     amount: new Intl.NumberFormat("en-US", {
+//       style: "currency",
+//       currency: "USD",
+//     }).format(price.unit_amount / 100),
+//   };
+
+//   return {
+//     props: {
+//       product,
+//     },
+//   };
+// };
+
+// Gera o HTML referente ao processamento dessa função de forma estática
+// SSG - Static Site Generation(SÓ PODE SER USADO EM PÁGINAS GERAIS)
+export const getStaticProps: GetStaticProps = async () => {
   const price = await stripe.prices.retrieve("price_1KNhaXJFfeRRNYB1Ab6S7umT", {
     expand: ["product"],
   });
@@ -76,5 +99,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
     props: {
       product,
     },
+    revalidate: 60 * 60 * 24, //24 hours
   };
 };
