@@ -1,7 +1,62 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { Readable } from 'stream'
+import Stripe from "stripe";
+import { stripe } from "../../services/stripe";
+
+async function buffer(readable: Readable){
+  const chunks = []
+
+  for await (const chunck of readable){
+    chunks.push(
+      typeof chunck === 'string' ? Buffer.from(chunck) : chunck
+    )
+  }
+
+  return Buffer.concat(chunks)
+}
+
+/*
+  Next tem uma configuração padrão que entende toda requisição
+  como um JSON ou um Objeto, porém como nesse caso a requisição
+  é um Readable, é preciso desabilitar essa configuração
+*/
+
+export const config = {
+  api:{
+    bodyParser: false
+  }
+}
+
+const relevantEvents = new Set([
+  'checkout.session.completed'
+])
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  console.log('Evento Recebido')
+  if(req.method === 'POST'){
+    const buf = await buffer(req)
 
-  res.status(200).json({ok: true})
+    // Identificando se a requisição veio mesmo do Stripe
+    // Seguindo a recomendação do Próprio stripe
+    const secret = req.headers['stripe-signature']
+
+    let event: Stripe.Event
+
+    try{
+      event = stripe.webhooks.constructEvent(buf, secret, process.env.STRIPE_WEBHOOK_SECRET)
+    }catch(err){
+      return res.status(400).send(`Webhook erro: ${err.message}`)
+    }
+
+    const type = event.type
+
+    if(relevantEvents.has(type)){
+      console.log('Evento recebido', type)
+    }
+
+    
+    res.status(200).json({received: true})
+  }else{
+    res.setHeader('Allow', 'POST')
+    res.status(405).end('Method not allowed')
+  }
 }
