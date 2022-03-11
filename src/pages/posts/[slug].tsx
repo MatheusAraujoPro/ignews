@@ -42,6 +42,16 @@ export const getServerSideProps: GetServerSideProps = async ({
   // Pegar a sessão do usuário
   const session = await getSession({ req });
 
+  // Validando se a inscrição do usuário está ativa
+  if (!session.activeSubscription) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   // Pegar o slug do post pela requisição
   const { slug } = params;
   // console.log(slug);
