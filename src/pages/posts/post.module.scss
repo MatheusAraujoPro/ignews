@@ -38,4 +38,32 @@
       margin: 0.5rem 0;
     }
   }
+
+  &.previewContent {
+    // Vai varair de var-gray-100 para transparente
+    background: linear-gradient(var(--gray-100), transparent);
+    //especifica se o fundo de um elemento, seja cor ou imagem, se extende debaixo de sua área de borda, preenchimento ou conteúdo.
+    background-clip: text;
+    //Necessário para a aplicação do efeito gradiente no texto
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+.continueReading {
+  padding: 2rem;
+  text-align: center;
+  background: var(--gray-800);
+  border-radius: 100px;
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin: 4rem 0 2rem;
+
+  a {
+    color: var(--yellow-500);
+    margin-left: 0.4rem;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }

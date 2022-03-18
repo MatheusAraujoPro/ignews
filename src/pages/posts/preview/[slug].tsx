@@ -1,9 +1,12 @@
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { GetStaticPaths, GetStaticProps } from "next";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { RichText } from "prismic-dom";
-import { getPrismicClient } from "../../services/prismic";
-import styles from "./post.module.scss";
+import { useEffect } from "react";
+import { getPrismicClient } from "../../../services/prismic";
+import styles from "../../posts/post.module.scss";
 
 interface PostProps {
   post: {
@@ -15,6 +18,15 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps) {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session?.activeSubscription) {
+      router.push("/");
+    }
+  }, [session]);
+
   return (
     <>
       <Head>
@@ -26,38 +38,35 @@ export default function Post({ post }: PostProps) {
           <h1>{post.title}</h1>
           <time>{post.updatedAt}</time>
           <div
-            className={styles.postContent}
+            className={`${styles.postContent} ${styles.previewContent}`}
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
+
+          <div className={styles.continueReading}>
+            Wanna continue reading?
+            <Link href="/">
+              <a>Subscribe Now 🤗 </a>
+            </Link>
+          </div>
         </article>
       </main>
     </>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({
-  req,
-  params,
-}) => {
-  // Pegar a sessão do usuário
-  const session = await getSession({ req });
+export const getStaticPaths: GetStaticPaths = () => {
+  return {
+    paths: [],
+    fallback: "blocking",
+  };
+};
 
-  // Validando se a inscrição do usuário está ativa
-  if (!session?.activeSubscription) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
-
-  // Pegar o slug do post pela requisição
+export const getStaticProps: GetStaticProps = async ({ params }) => {
   const { slug } = params;
   // console.log(slug);
 
   // Criar um cliente Prismic
-  const prismic = getPrismicClient(req);
+  const prismic = getPrismicClient();
 
   // Fazendo a chamada para a API do PRismic
   const response = await prismic.getByUID("publication", String(slug), {});
@@ -66,7 +75,7 @@ export const getServerSideProps: GetServerSideProps = async ({
   const post = {
     slug,
     title: RichText.asText(response.data.title),
-    content: RichText.asHtml(response.data.content),
+    content: RichText.asHtml(response.data.content.splice(0, 3)),
     updatedAt: new Date(response.last_publication_date).toLocaleDateString(
       "pt-BR",
       {
